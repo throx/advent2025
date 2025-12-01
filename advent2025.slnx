@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="day1/day1.vcxproj" Id="517ee968-729b-4585-9be3-ccd496366167">
+    <BuildDependency Project="shared/shared.vcxproj" />
+  </Project>
+  <Project Path="shared/shared.vcxproj" Id="8346510d-4e50-4c9e-887c-b9c69183e78f" />
+</Solution>
