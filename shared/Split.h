@@ -34,52 +34,50 @@ static inline std::string trim(const std::string& s) {
 }
 
 template<class _F>
-void Split(const std::string& s, _F fn, char tok = ',')
+void split(const std::string& s, _F fn, char tok = ',', bool ignore_consecutive = false)
 {
     std::istringstream iss(s);
     std::string n;
 
     while (getline(iss, n, tok)) {
-        fn(trim(n));
+        if (!ignore_consecutive || !n.empty()) {
+            fn(trim(n));
+        }
     }
 }
 
-static inline std::vector<std::string> Split(const std::string& s, char tok = ',')
+static inline std::vector<std::string> split(const std::string& s, char tok = ',', bool ignore_consecutive = false)
 {
     std::vector<std::string> r;
-    Split(s, [&](std::string&& x) {
+    split(s, [&](std::string&& x) {
         r.push_back(x);
-        }, tok);
+        }, tok, ignore_consecutive);
     return r;
 }
 
 
-static inline std::vector<int> SplitInts(const std::string& s, char tok = ',')
+static inline std::vector<int> split_ints(const std::string& s, char tok = ',')
 {
     std::vector<int> r;
-    Split(s, [&](std::string&& x) {
-        if (!x.empty()) {
-            r.push_back(stoi(x));
-        }
-        }, tok);
+    split(s, [&](std::string&& x) {
+        r.push_back(stoi(x));
+        }, tok, true);
     return r;
 }
 
 
-static inline std::vector<int64_t> SplitInt64s(const std::string& s, char tok = ',')
+static inline std::vector<int64_t> split_int64s(const std::string& s, char tok = ',')
 {
     std::vector<int64_t> r;
-    Split(s, [&](std::string&& x) {
-        if (!x.empty()) {
-            r.push_back(stoll(x));
-        }
-        }, tok);
+    split(s, [&](std::string&& x) {
+        r.push_back(stoll(x));
+        }, tok, true);
     return r;
 }
 
 
 template<class _F>
-void Split(const std::string& s, _F fn, const std::string& tok = "->")
+void split(const std::string& s, _F fn, const std::string& tok = "->")
 {
     std::string buf(s);
     auto p = buf.find(tok);
@@ -92,10 +90,10 @@ void Split(const std::string& s, _F fn, const std::string& tok = "->")
     fn(trim(buf));
 }
 
-static inline std::vector<std::string> Split(const std::string& s, const std::string& tok)
+static inline std::vector<std::string> split(const std::string& s, const std::string& tok)
 {
     std::vector<std::string> r;
-    Split(s, [&](std::string&& x) {
+    split(s, [&](std::string&& x) {
         r.push_back(x);
         }, tok);
     return r;
