@@ -154,6 +154,16 @@ int64_t Dist(const Point<N>& p1, const Point<N>& p2) {
     return sum;
 }
 
+// Euclidian distance
+template<int N>
+double L2Dist(const Point<N>& p1, const Point<N>& p2) {
+    double sum = 0;
+    for (int i = 0; i < N; ++i) {
+        sum += pow((double)(p1[i] - p2[i]), 2.0);
+    }
+    return sqrt(sum);
+}
+
 // Dot product
 template<int N>
 int64_t Dot(const Point<N>& p1, const Point<N>& p2) {
