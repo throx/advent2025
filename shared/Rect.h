@@ -69,9 +69,9 @@ public:
         return m_end;
     }
 
-    const Point<N>& incend() const
+    Point<N> incend() const
     {
-        return end - ONE;
+        return end() - ONE;
     }
 
     Point<N> Length() const
