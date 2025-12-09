@@ -9,9 +9,6 @@
 #include "../shared/Point.h"
 #include "../shared/Rect.h"
 
-// Get this yourself from github.com/jlblancoc/nanoflann
-#include "../shared/nanoflann.hpp"
-
 #ifdef _WIN32
 #include <conio.h>
 #else
@@ -44,10 +41,15 @@ int main()
 
     auto path = red;
     path.push_back(red[0]);
-	set<Point2> border;
+
+	// Build a range tree of the border points
+	map<int64_t, vector<int64_t>> border;
     DoLines(path.begin(), path.end(), [&](const Point2& p) {
-        border.insert(p);
+        border[p[0]].push_back(p[1]);
     });
+    for (auto& [x, ys] : border) {
+        sort(ys.begin(), ys.end());
+	}
 
     for (int i = 0; i < red.size() - 1; ++i) {
         for (int j = i + 1; j < red.size(); ++j) {
@@ -58,9 +60,16 @@ int main()
             if (l[0] > 1 && l[1] > 1) {
                 Rect2 bad = r.ExpandBy(-1);
 
+                // Range tree lookup
                 bool valid = true;
-                for (auto it = border.lower_bound(bad.start()); it != border.upper_bound(bad.end()); ++it) {
-                    if (bad.Contains(*it)) {
+				auto lower = border.lower_bound(bad.start()[0]);
+				auto upper = border.upper_bound(bad.end()[0]);
+                for (auto it = lower; it != upper; ++it) {
+					const auto& ys = it->second;
+
+					// Binary search for any y in range
+					auto ystart = lower_bound(ys.begin(), ys.end(), bad.start()[1]);
+					if (ystart != ys.end() && *ystart < bad.end()[1])    {
                         valid = false;
                         break;
                     }

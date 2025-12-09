@@ -6,9 +6,6 @@
 
 #include "../shared/Point.h"
 
-// Get this yourself from github.com/jlblancoc/nanoflann
-#include "../shared/nanoflann.hpp"
-
 #ifdef _WIN32
 #include <conio.h>
 #else
