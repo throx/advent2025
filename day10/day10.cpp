@@ -9,6 +9,10 @@
 static inline void _getch() {}
 #endif
 
+// Get the library from https://www.gnu.org/software/glpk
+#include "glpk.h"
+#pragma comment(lib, "glpk_4_65.lib")
+
 using namespace std;
 
 struct button {
@@ -73,50 +77,78 @@ string vec2str(const vector<int>& v) {
 
 int solve2(const machine& m)
 {
-	map<vector<int>, int> visited;
-	queue<vector<int>> next;
-	size_t bsz = m.buttons.size();
-	next.push(vector<int>(m.n));
-	visited[vector<int>(m.n)] = 0;
+	int nvars = m.buttons.size();
+	int ncons = m.n;
 
-	while (true) {
-		auto joltage = next.front();
-		next.pop();
+	// I friggen give up.  Linear programming it is.
 
-		int presses = visited[joltage];
+	// Set up the problem
+	glp_prob* lp = glp_create_prob();
+	glp_set_prob_name(lp, "Lights and Buttons");
+	glp_set_obj_dir(lp, GLP_MIN);
 
-		cout << "Joltage = " << vec2str(joltage) << " = " << presses << endl;
+	// (# buttons) variables
+	glp_add_cols(lp, nvars);
+	for (int i = 1; i <= nvars; i++) {
+		glp_set_col_kind(lp, i, GLP_IV);      // integer variable
+		glp_set_col_bnds(lp, i, GLP_LO, 0.0, 0.0); // x >= 0
+		glp_set_obj_coef(lp, i, 1.0);         // objective: minimize sum (coeff 1.0 for each variable)
+	}
 
-		++presses;
+	// (# joltages) constraints
+	glp_add_rows(lp, ncons);
 
-		for (int i = 0; i < bsz; ++i) {
-			auto newjoltage = joltage;
-			for (auto l : m.buttons[i].lights) {
-				newjoltage[l] = newjoltage[l] + 1;
-			}
+	// Set up the constraint matrix.  Remember GLPK is 1-based arrays because WTF!?
+	vector<vector<int>> indexes;
+	vector<vector<double>> values;
+	for (int i = 0; i < ncons; ++i) {
+		vector<int> index(nvars + 1);
+		vector<double> value(nvars + 1);
+		for (int j = 1; j <= nvars; ++j) {
+			index[j] = j;
+		}
+		indexes.push_back(index);
+		values.push_back(value);
+	}
 
-			if (newjoltage == m.joltage) {
-				return presses;
-			}
-
-			if (visited.find(newjoltage) != visited.end()) {
-				continue;
-			}
-
-			bool good = true;
-			for (int i = 0; i < m.n; ++i) {
-				if (newjoltage[i] > m.joltage[i]) {
-					good = false;
-					break;
-				}
-			}
-
-			if (good) {
-				visited[newjoltage] = presses;
-				next.push(newjoltage);
-			}
+	// Store the light presses into the matrix
+	for (int j = 0; j < nvars; ++j) {
+		for (auto l : m.buttons[j].lights) {
+			values[l][j + 1] = 1.0;
 		}
 	}
+
+	// Tell GLPK about the matrix
+	for (int i = 0; i < ncons; ++i) {
+		glp_set_row_bnds(lp, i + 1, GLP_FX, m.joltage[i], m.joltage[i]);
+		int* ind = &indexes[i][0];
+		double* val = &values[i][0];
+		glp_set_mat_row(lp, i + 1, indexes[i].size() - 1, ind, val);
+	}
+
+	// Solve
+	glp_iocp parm;
+	glp_init_iocp(&parm);
+	parm.presolve = GLP_ON;
+	int ret = glp_intopt(lp, &parm);
+
+	int result = INT_MAX;
+	if (ret == 0) {
+		cout << "Optimal solution:\n";
+		for (int i = 1; i <= nvars; i++) {
+			cout << "Button " << i << " = " << glp_mip_col_val(lp, i) << endl;
+		}
+		result = glp_mip_obj_val(lp);
+		cout << "Total presses = " << result << endl;
+		cout << endl;
+	}
+	else {
+		throw "Boom";
+	}
+
+	glp_delete_prob(lp);
+	return result;
+
 }
 
 int main()
@@ -170,9 +202,7 @@ int main()
 		machines.push_back(m);
 	}
 
-	int x = 0;
 	for (const auto& m : machines) {
-		cout << x++ << endl;
 		part1 += solve1(m);
 		part2 += solve2(m);
 	}

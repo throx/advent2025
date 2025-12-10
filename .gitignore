@@ -5,6 +5,7 @@
 
 # JW - my own files
 input.txt
+glpk*
 
 # User-specific files
 *.rsuser
