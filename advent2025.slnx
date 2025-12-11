@@ -7,6 +7,7 @@
     <BuildDependency Project="shared/shared.vcxproj" />
   </Project>
   <Project Path="day10/day10.vcxproj" Id="f60b859b-8bc1-4bde-a8f6-c11d73992aa0" />
+  <Project Path="day11/day11.vcxproj" Id="bbd60c61-2f01-4983-8cbf-0c8e7798498b" />
   <Project Path="day2/day2.vcxproj" Id="a13f04dd-676a-4f1c-b13e-6ec63f0e1297" />
   <Project Path="day3/day3.vcxproj" Id="704b3bd7-536b-4d1f-8ff0-6dc9d73fe4b9" />
   <Project Path="day4/day4.vcxproj" Id="250d92d8-2e87-41ac-bc0c-32a7677ec460" />
